@@ -2,6 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import { RequestValidationError } from "../errors/request-validation-error";
 import { DatabaseConnectionError } from "../errors/database-connection-error";
 
+interface FormattedError {
+  message: string;
+  field?: string;
+}
+
 export const errorHandler = (
   err: Error,
   req: Request,
@@ -9,8 +14,8 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   if (err instanceof RequestValidationError) {
-    const formattedErrors = err.errors.map((error) => {
-      return { message: error.msg, field: error.param };
+    const formattedErrors: FormattedError[] = err.errors.map((error) => {
+      return { message: error?.msg, field: error?.type } as FormattedError;
     });
     return res.status(400).send({ errors: formattedErrors });
   }
@@ -22,3 +27,4 @@ export const errorHandler = (
     errors: [{ message: "Something went wrong" }],
   });
 };
+
