@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  auth:
+    build: ./auth
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-mongo-srv
+    volumes:
+      - auth-data:/app/data
+
+  auth-mongo-srv:
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  auth-data:
+  mongo-data:
+
