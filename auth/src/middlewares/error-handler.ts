@@ -14,13 +14,15 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   if (err instanceof RequestValidationError) {
-    const formattedErrors: FormattedError[] = err.errors.map((error) => {
-      return { message: error?.msg, field: error?.type } as FormattedError;
-    });
-    return res.status(400).send({ errors: formattedErrors });
+    //const formattedErrors: FormattedError[] = err.errors.map((error) => {
+    //return { message: error?.msg, field: error?.type } as FormattedError;
+    //});
+    //return res.status(400).send({ errors: formattedErrors });
+    return res.status(err.statusCode).send({ errors: err.serializeErrors() });
   }
   if (err instanceof DatabaseConnectionError) {
-    return res.status(500).send({ errors: [{ message: err.reason }] });
+    return res.status(err.statusCode).send({ errors: [{ message: err.serializeErrors() }] });
+    //return res.status(500).send({ errors: [{ message: err.reason }] });
   }
 
   res.status(400).send({
