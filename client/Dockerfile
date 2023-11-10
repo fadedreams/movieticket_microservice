@@ -12,7 +12,9 @@ RUN npm install -g pnpm && \
 # Copy the rest of the application code
 COPY . .
 
+# Expose port 8080
+EXPOSE 8080
+
 # Specify the command to run your application
 CMD ["pnpm", "run", "dev"]
-
 

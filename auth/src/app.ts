@@ -1,5 +1,6 @@
 import express from 'express';
 import 'express-async-errors';
+import cors from 'cors';
 import { json } from 'body-parser';
 import cookieSession from 'cookie-session';
 
@@ -19,6 +20,17 @@ app.use(
     secure: true
   })
 );
+
+//app.use(cors());
+//app.use(cors({ origin: true, credentials: true }));
+const corsOptions = {
+  origin: ["http://localhost:8080"],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+app.use(cors(corsOptions));
+
 
 app.use(currentUserRouter);
 app.use(signinRouter);

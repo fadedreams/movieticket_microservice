@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  my_network:
+    driver: bridge
+
 services:
   auth:
     build: ./auth
@@ -11,6 +15,8 @@ services:
       - auth-data:/app/data
     env_file:
       - ./shared.env
+    networks:
+      - my_network
 
   auth-mongo-srv:
     image: mongo
@@ -22,17 +28,21 @@ services:
       - mongo-data:/data/db
     env_file:
       - ./shared.env
+    networks:
+      - my_network
 
   client:
     build: ./client
     ports:
-      - "8080:3000"
+      - "8080:8080"
     depends_on:
       - auth
     env_file:
       - ./shared.env
     volumes:
       - client-data:/app/.next
+    networks:
+      - my_network
 
 volumes:
   auth-data:

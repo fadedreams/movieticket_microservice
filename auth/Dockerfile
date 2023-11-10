@@ -11,7 +11,7 @@ RUN npm install -g pnpm && \
 
 # Copy the rest of the application code
 COPY . .
-
+EXPOSE 3000
 # Specify the command to run your application
 CMD ["pnpm", "start"]
 
