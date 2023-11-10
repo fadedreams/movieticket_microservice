@@ -4,27 +4,22 @@ import axios from 'axios';
 export default () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState([]);
 
-  const onSubmit = async (event) => {
+  const onSubmit = async event => {
     event.preventDefault();
 
-    // Set the base URL for Axios
-    //axios.defaults.baseURL = 'http://localhost:3000';
-
     try {
-      const response = await axios.post('http://localhost:3000/api/users/signup', {
+
+      axios.defaults.baseURL = 'http://localhost:3000';
+      const response = await axios.post('/api/users/signup', {
         email,
-        password,
-      }, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        password
       });
 
       console.log(response.data);
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (err) {
+      setErrors(err.response.data.errors);
     }
   };
 
@@ -35,7 +30,7 @@ export default () => {
         <label>Email Address</label>
         <input
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           className="form-control"
         />
       </div>
@@ -43,11 +38,21 @@ export default () => {
         <label>Password</label>
         <input
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           type="password"
           className="form-control"
         />
       </div>
+      {errors.length > 0 && (
+        <div className="alert alert-danger">
+          <h4>Ooops....</h4>
+          <ul className="my-0">
+            {errors.map(err => (
+              <li key={err.message}>{err.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <button className="btn btn-primary">Sign Up</button>
     </form>
   );
