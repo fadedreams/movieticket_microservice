@@ -9,6 +9,8 @@ services:
       - auth-mongo-srv
     volumes:
       - auth-data:/app/data
+    env_file:
+      - ./shared.env  # Use a separate file for shared environment variables
 
   auth-mongo-srv:
     image: mongo
@@ -18,6 +20,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    env_file:
+      - ./shared.env  # Use the same file for shared environment variables
 
 volumes:
   auth-data:
