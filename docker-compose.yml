@@ -10,7 +10,7 @@ services:
     volumes:
       - auth-data:/app/data
     env_file:
-      - ./shared.env  # Use a separate file for shared environment variables
+      - ./shared.env
 
   auth-mongo-srv:
     image: mongo
@@ -21,9 +21,21 @@ services:
     volumes:
       - mongo-data:/data/db
     env_file:
-      - ./shared.env  # Use the same file for shared environment variables
+      - ./shared.env
+
+  client:
+    build: ./client
+    ports:
+      - "8080:3000"
+    depends_on:
+      - auth
+    env_file:
+      - ./shared.env
+    volumes:
+      - client-data:/app/.next
 
 volumes:
   auth-data:
   mongo-data:
+  client-data:
 
