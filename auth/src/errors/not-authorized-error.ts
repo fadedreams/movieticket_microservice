@@ -13,4 +13,3 @@ export class NotAuthorizedError extends CustomError {
     return [{ message: 'Not authorized' }];
   }
 }
-
