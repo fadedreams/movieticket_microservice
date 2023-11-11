@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import Router from 'next/router';
 
 export default () => {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default () => {
       }, { withCredentials: true });
 
       console.log(response.data);
+      Router.push('/');
     } catch (err) {
       setErrors(err.response.data.errors);
     }
