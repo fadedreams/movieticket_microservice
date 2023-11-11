@@ -14,13 +14,21 @@ import { NotFoundError } from './errors/not-found-error';
 const app = express();
 app.set('trust proxy', true);
 app.use(json());
+//app.use(
+//cookieSession({
+//signed: false,
+//secure: false
+//})
+//);
 app.use(
   cookieSession({
-    signed: false,
-    secure: false
+    name: 'session', // name of the cookie
+    keys: ['secret'], // array of secret keys for encryption
+    maxAge: 24 * 60 * 60 * 1000, // session expiration time (24 hours in milliseconds)
+    secure: false, // set to true if using https
+    httpOnly: false, // cookie is not accessible via client-side script
   })
 );
-
 //app.use(cors());
 //app.use(cors({ origin: true, credentials: true }));
 const corsOptions = {
