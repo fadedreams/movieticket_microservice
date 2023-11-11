@@ -44,8 +44,36 @@ services:
     networks:
       - my_network
 
+  tickets:
+    build: ./tickets
+    ports:
+      - "3001:3001"  # Adjust the port as needed
+    depends_on:
+      - tickets-mongo-srv
+    volumes:
+      - tickets-data:/app/data
+    env_file:
+      - ./shared.env
+    networks:
+      - my_network
+
+  tickets-mongo-srv:
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: tickets
+    ports:
+      - "27018:27017"  # Adjust the port as needed
+    volumes:
+      - tickets-mongo-data:/data/db
+    env_file:
+      - ./shared.env
+    networks:
+      - my_network
+
 volumes:
   auth-data:
   mongo-data:
   client-data:
+  tickets-data:
+  tickets-mongo-data:
 
