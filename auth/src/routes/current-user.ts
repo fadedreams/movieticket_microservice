@@ -1,6 +1,9 @@
 import express from 'express';
-import { currentUser } from '../middlewares/current-user';
-import { requireAuth } from '../middlewares/require-auth';
+//import { currentUser } from '../middlewares/current-user';
+//import { requireAuth } from '../middlewares/require-auth';
+
+import { currentUser } from '@fadedreams7org1/common';
+import { requireAuth } from '@fadedreams7org1/common';
 
 const router = express.Router();
 
