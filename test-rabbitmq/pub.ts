@@ -1,6 +1,6 @@
 export const express_port: number = 3000;
 export const rabbit_host: string = "amqp://localhost";
-export const default_rabbit_queue_name: string = "my_queue";
+export const default_rabbit_queue_name: string = "ticket:create";
 
 import amqp, { Channel, Connection } from "amqplib/callback_api";
 

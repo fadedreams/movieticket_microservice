@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fadedreams7org1/common": "^1.0.4",
     "amqplib": "^0.10.3",
     "express": "^4.18.2",
     "ts-node-dev": "^2.0.0",

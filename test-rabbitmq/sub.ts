@@ -1,7 +1,7 @@
 import amqp, { Message } from "amqplib/callback_api";
 export const express_port: number = 3000;
 export const rabbit_host: string = "amqp://localhost";
-export const rabbit_queue_name: string = "my_queue";
+export const rabbit_queue_name: string = "ticket:create";
 
 
 amqp.connect(rabbit_host, (err: any, conn) => {

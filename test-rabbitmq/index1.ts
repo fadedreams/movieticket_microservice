@@ -1,5 +1,9 @@
-import { RabbitMQService } from "@fadedreams7org1/common";
 import express, { Request, Response } from "express";
+import { RabbitMQService } from "./crabbitmq";
+
+//export const express_port: number = 3000;
+//export const rabbit_host: string = "amqp://localhost";
+//export const rabbit_queue_name: string = "ticket:create";
 
 const app = express();
 
@@ -29,6 +33,5 @@ app.listen("3000", () => {
   console.log(`Express with Typescript! http://localhost:3000`);
 });
 
-rabbitService.startConsumer();
-
+rabbitService.startConsumer(queueName="queue3");
 
