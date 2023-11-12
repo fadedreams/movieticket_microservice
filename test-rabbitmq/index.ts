@@ -1,9 +1,13 @@
-import { RabbitMQService } from "@fadedreams7org1/common";
 import express, { Request, Response } from "express";
+import { RabbitMQService } from "./crabbitmq";
+
+//export const express_port: number = 3000;
+//export const rabbit_host: string = "amqp://localhost";
+//export const rabbit_queue_name: string = "ticket:create";
 
 const app = express();
 
-const rabbitService = new RabbitMQService("amqp://localhost", "queue2");
+const rabbitService = new RabbitMQService("amqp://localhost", "ticket:created");
 
 
 const pro = rabbitService.startProducer();
@@ -25,10 +29,10 @@ app.get("/", (req: Request, res: Response) => {
   res.send("welcome to rabbit");
 });
 
-app.listen("3000", () => {
+app.listen("3003", () => {
   console.log(`Express with Typescript! http://localhost:3000`);
 });
 
-rabbitService.startConsumer();
-
+rabbitService.startConsumer("ticket:created");
+rabbitService.startConsumer("ticket:updated");
 

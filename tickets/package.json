@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fadedreams7org1/common": "^1.0.2",
+    "@fadedreams7org1/common": "^1.0.4",
     "@types/body-parser": "^1.19.5",
     "@types/cookie-session": "^2.0.47",
     "@types/cors": "^2.8.16",

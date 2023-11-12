@@ -1,10 +1,14 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { requireAuth, validateRequest } from '@fadedreams7org1/common';
-import { Ticket } from '../models/ticket';
 import { currentUser } from '@fadedreams7org1/common';
+import { Ticket } from '../models/ticket';
+import { RabbitMQService } from "@fadedreams7org1/common";
+//import { RabbitMQService } from "./crabbitmq";
+
 
 const router = express.Router();
+const rabbitService = new RabbitMQService("amqp://localhost", "ticket:create");
 
 //router.post('/api/tickets', currentUser, requireAuth, (req: Request, res: Response) => {
 //res.sendStatus(200);
@@ -29,7 +33,12 @@ router.post(
       userId: req.currentUser!.id,
     });
     await ticket.save();
-
+    const produceMessage = rabbitService.startProducer("ticket:created");
+    produceMessage({
+      title,
+      price,
+      userId: req.currentUser!.id,
+    });
     res.status(201).send(ticket);
   }
 );

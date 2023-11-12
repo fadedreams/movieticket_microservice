@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { currentUser } from '@fadedreams7org1/common';
+import { RabbitMQService } from "@fadedreams7org1/common";
 
 import {
   validateRequest,
@@ -11,6 +12,7 @@ import {
 import { Ticket } from '../models/ticket';
 
 const router = express.Router();
+const rabbitService = new RabbitMQService("amqp://localhost", "ticket:create");
 
 router.put(
   '/api/tickets/:id', currentUser,
@@ -38,7 +40,11 @@ router.put(
       price: req.body.price,
     });
     await ticket.save();
-
+    const produceMessage = rabbitService.startProducer("ticket:updated");
+    produceMessage({
+      title: req.body.title,
+      price: req.body.price,
+    });
     res.send(ticket);
   }
 );
