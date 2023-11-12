@@ -21,8 +21,8 @@ beforeAll(async () => {
   const mongoUri = await mongo.getUri();
 
   await mongoose.connect(mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    //useNewUrlParser: true,
+    //useUnifiedTopology: true,
   });
 });
 
@@ -42,7 +42,7 @@ afterAll(async () => {
 global.signin = () => {
   // Build a JWT payload.  { id, email }
   const payload = {
-    id: '1lk24j124l',
+    id: new mongoose.Types.ObjectId().toHexString(),
     email: 'test@test.com',
   };
 
@@ -61,4 +61,3 @@ global.signin = () => {
   // return a string thats the cookie with the encoded data
   return [`session=${base64}`];
 };
-
