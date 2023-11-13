@@ -4,12 +4,16 @@ import {
   NotFoundError,
   NotAuthorizedError,
 } from '@fadedreams7org1/common';
+import { currentUser } from '@fadedreams7org1/common';
 import { Order, OrderStatus } from '../models/order';
+import { RabbitMQService } from "@fadedreams7org1/common";
 
 const router = express.Router();
+const rabbitService = new RabbitMQService("amqp://localhost", "ticket:create");
 
 router.delete(
   '/api/orders/:orderId',
+  currentUser,
   requireAuth,
   async (req: Request, res: Response) => {
     const { orderId } = req.params;
@@ -24,6 +28,13 @@ router.delete(
     }
     order.status = OrderStatus.Cancelled;
     await order.save();
+    const produceMessage = rabbitService.startProducer("order:cancelled");
+    produceMessage({
+      id: order.id,
+      ticket: {
+        id: order.ticket.id,
+      },
+    });
 
     // publishing an event saying this was cancelled!
 

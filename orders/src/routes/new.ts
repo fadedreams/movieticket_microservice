@@ -7,16 +7,20 @@ import {
   OrderStatus,
   BadRequestError,
 } from '@fadedreams7org1/common';
+import { currentUser } from '@fadedreams7org1/common';
 import { body } from 'express-validator';
 import { Ticket } from '../models/ticket';
 import { Order } from '../models/order';
+import { RabbitMQService } from "@fadedreams7org1/common";
 
 const router = express.Router();
+const rabbitService = new RabbitMQService("amqp://localhost", "ticket:create");
 
 const EXPIRATION_WINDOW_SECONDS = 15 * 60;
 
 router.post(
   '/api/orders',
+  currentUser,
   requireAuth,
   [
     body('ticketId')
@@ -53,8 +57,19 @@ router.post(
       ticket,
     });
     await order.save();
-
     // Publish an event saying that an order was created
+    //const produceMessage = rabbitService.startProducer("order:created");
+    //produceMessage({
+    //id: order.id,
+    //status: order.status,
+    //userId: order.userId,
+    //expiresAt: order.expiresAt.toISOString(),
+    //ticket: {
+    //id: ticket.id,
+    //price: ticket.price,
+    //},
+    //});
+
 
     res.status(201).send(order);
   }

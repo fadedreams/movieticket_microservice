@@ -4,12 +4,14 @@ import {
   NotFoundError,
   NotAuthorizedError,
 } from '@fadedreams7org1/common';
+import { currentUser } from '@fadedreams7org1/common';
 import { Order } from '../models/order';
 
 const router = express.Router();
 
 router.get(
   '/api/orders/:orderId',
+  currentUser,
   requireAuth,
   async (req: Request, res: Response) => {
     const order = await Order.findById(req.params.orderId).populate('ticket');
