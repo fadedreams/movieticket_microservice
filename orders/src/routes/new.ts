@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import express, { Request, Response } from 'express';
 import {
   requireAuth,
@@ -9,9 +8,10 @@ import {
 } from '@fadedreams7org1/common';
 import { currentUser } from '@fadedreams7org1/common';
 import { body } from 'express-validator';
-import { Ticket } from '../models/ticket';
+import mongoose from 'mongoose'; // Import mongoose
+import { TicketO } from '../models/ticket';
 import { Order } from '../models/order';
-import { RabbitMQService } from "@fadedreams7org1/common";
+import { RabbitMQService } from '../utils'; // Adjust the path
 
 const router = express.Router();
 const rabbitService = new RabbitMQService("amqp://localhost", "ticket:create");
@@ -34,7 +34,7 @@ router.post(
     const { ticketId } = req.body;
 
     // Find the ticket the user is trying to order in the database
-    const ticket = await Ticket.findById(ticketId);
+    const ticket = await TicketO.findById(ticketId);
     if (!ticket) {
       throw new NotFoundError();
     }
@@ -42,7 +42,7 @@ router.post(
     // Make sure that this ticket is not already reserved
     const isReserved = await ticket.isReserved();
     if (isReserved) {
-      throw new BadRequestError('Ticket is already reserved');
+      throw new BadRequestError('TicketO is already reserved');
     }
 
     // Calculate an expiration date for this order
@@ -57,22 +57,24 @@ router.post(
       ticket,
     });
     await order.save();
-    // Publish an event saying that an order was created
-    //const produceMessage = rabbitService.startProducer("order:created");
-    //produceMessage({
-    //id: order.id,
-    //status: order.status,
-    //userId: order.userId,
-    //expiresAt: order.expiresAt.toISOString(),
-    //ticket: {
-    //id: ticket.id,
-    //price: ticket.price,
-    //},
-    //});
 
+    // Publish an event saying that an order was created
+    const produceMessage = await rabbitService.startProducer("order:created");
+    produceMessage({
+      id: order.id,
+      status: order.status,
+      userId: order.userId,
+      expiresAt: order.expiresAt.toISOString(),
+      ticket: {
+        id: ticket.id,
+        price: ticket.price,
+      },
+    });
+    console.log("Order created and published to order:created", order);
 
     res.status(201).send(order);
   }
 );
 
-export { router as newOrderRouter };
+export { router as createOrderRouter };
+

@@ -6,7 +6,7 @@ import cors from 'cors';
 import { json } from 'body-parser';
 import cookieSession from 'cookie-session';
 
-import { newOrderRouter } from './routes/new';
+import { createOrderRouter } from './routes/new';
 import { showOrderRouter } from './routes/show';
 import { indexOrderRouter } from './routes/index';
 import { deleteOrderRouter } from './routes/delete';
@@ -46,7 +46,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-app.use(newOrderRouter);
+app.use(createOrderRouter);
 app.use(showOrderRouter);
 app.use(indexOrderRouter);
 app.use(deleteOrderRouter);

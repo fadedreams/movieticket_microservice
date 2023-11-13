@@ -1,5 +1,5 @@
 import amqp, { Channel, Connection, Message } from "amqplib/callback_api";
-import { TicketO } from "./models/ticket";
+import { Ticket } from "./models/ticket";
 
 export class RabbitMQService {
   private rabbitHost: string;
@@ -10,6 +10,7 @@ export class RabbitMQService {
     this.rabbitHost = rabbitHost;
     this.defaultQueueName = defaultQueueName;
   }
+
 
   public startProducer(queueName: string = this.defaultQueueName): Promise<(data: any) => void> {
     console.log("Producer rabbitMQ: connecting");
@@ -63,6 +64,7 @@ export class RabbitMQService {
     });
   }
 
+
   public startConsumer(queueName: string = this.defaultQueueName) {
     console.log("Consumer rabbitMQ : connecting");
 
@@ -100,9 +102,9 @@ export class RabbitMQService {
           const msg = JSON.parse(data.content.toString());
           console.log(msg); // do your thing with the message
           if (queueName === "ticket:created") {
-            await this.handleTicketCreated(msg);
+            await this.handleOrderCreated(msg);
           } else if (queueName === "ticket:updated") {
-            await this.handleTicketUpdated(msg);
+            await this.handleOrderUpdated(msg);
           }
         }
       },
@@ -110,38 +112,38 @@ export class RabbitMQService {
     );
   }
 
-  private async handleTicketCreated(data: any) {
+  private async handleOrderCreated(data: any) {
     const { id, title, price, userId, version } = data;
 
     try {
       // Check if a ticket with the given ID already exists
-      const existingTicket = await TicketO.findById(id);
+      const existingTicket = await Ticket.findById(id);
 
       if (existingTicket) {
-        console.warn(`TicketO with ID ${id} already exists. Updating instead of creating.`);
+        console.warn(`Ticket with ID ${id} already exists. Updating instead of creating.`);
         // Handle logic to update the existing ticket if needed
         existingTicket.set({ title, price, userId, version });
         await existingTicket.save();
-        console.log("TicketO updated:", existingTicket);
+        console.log("Ticket updated:", existingTicket);
       } else {
         // Create a new ticket with version information
-        const ticket = TicketO.build({ id, title, price, userId, version });
+        const ticket = Ticket.build({ id, title, price, userId, version });
 
         // Save the ticket to the database using optimistic concurrency control
         await ticket.save();
-        console.log("TicketO created:", ticket);
+        console.log("Ticket created:", ticket);
       }
     } catch (error) {
       console.error("Error creating/updating ticket:", error);
     }
   }
 
-  private async handleTicketUpdated(data: any) {
+  private async handleOrderUpdated(data: any) {
     const { ticketId, updatedFields, version } = data;
 
     try {
       // Find the ticket by ID and version
-      const ticket = await TicketO.findOne({ _id: ticketId, version: version - 1 });
+      const ticket = await Ticket.findOne({ _id: ticketId, version: version - 1 });
 
       if (ticket) {
         // Update ticket properties based on the received data
@@ -150,9 +152,9 @@ export class RabbitMQService {
         // Increment the version and save the updated ticket to the database
         await ticket.save();
 
-        console.log("TicketO updated:", ticket);
+        console.log("Ticket updated:", ticket);
       } else {
-        console.log("TicketO not found or version mismatch for update:", ticketId, version);
+        console.log("Ticket not found or version mismatch for update:", ticketId, version);
       }
     } catch (error) {
       console.error("Error updating ticket:", error);

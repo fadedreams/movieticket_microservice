@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 
 import { app } from './app';
 
+import { RabbitMQService } from "./utils";
+const rabbitService = new RabbitMQService();
+
 const start = async () => {
   //if (!process.env.JWT_KEY) {
   //throw new Error('JWT_KEY must be defined');
@@ -22,6 +25,11 @@ const start = async () => {
   app.listen(3001, () => {
     console.log('Listening on port 3001!!!!!!!!');
   });
+
+
+  rabbitService.startConsumer("order:created");
+  rabbitService.startConsumer("order:updated");
+
 };
 
 start();

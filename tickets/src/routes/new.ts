@@ -3,8 +3,8 @@ import { body } from 'express-validator';
 import { requireAuth, validateRequest } from '@fadedreams7org1/common';
 import { currentUser } from '@fadedreams7org1/common';
 import { Ticket } from '../models/ticket';
-import { RabbitMQService } from "@fadedreams7org1/common";
-//import { RabbitMQService } from "./crabbitmq";
+//import { RabbitMQService } from "@fadedreams7org1/common";
+import { RabbitMQService } from "../utils";
 
 
 const router = express.Router();
@@ -33,14 +33,22 @@ router.post(
       userId: req.currentUser!.id,
     });
     await ticket.save();
-    const produceMessage = rabbitService.startProducer("ticket:created");
+    //await ticket.save();
+    //await ticket.save();
+    const produceMessage = await rabbitService.startProducer("ticket:created");
     produceMessage({
+      id: ticket.id,
+      version: ticket.version,
       title,
       price,
       userId: req.currentUser!.id,
     });
+    console.log("ticket created and published to ticket:created", ticket);
+
     res.status(201).send(ticket);
   }
+
+
 );
 export { router as createTicketRouter };
 
