@@ -1,17 +1,62 @@
 import amqp, { Channel, Connection, Message } from "amqplib/callback_api";
-import { Ticket } from "./models/ticket";
-
+import Queue, { Job } from 'bull';
 
 export class RabbitMQService {
   private rabbitHost: string;
   private defaultQueueName: string;
   private channel: Channel | null = null;
+  private queue1;
 
   constructor(rabbitHost: string = "amqp://localhost", defaultQueueName: string = "queue1") {
     this.rabbitHost = rabbitHost;
     this.defaultQueueName = defaultQueueName;
-  }
+    this.queue1 = new Queue('queue1', {
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    });
 
+    this.setupJobProcessing();
+  }
+  private setupJobProcessing() {
+    // Function to process a job
+    const processJob = async (job: Job) => {
+      console.log(`Processing job for ${job.data.id}`);
+
+      // Simulate some processing time
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      console.log(`Job processing completed for ${job.data.id}`);
+      const produceMessage = await this.startProducer("order:expired");
+      produceMessage({
+        orderId: job.data.id,
+        ticketId: job.data.ticket.id,
+      });
+      // Mark the job as completed
+      await job.remove();
+    };
+
+    // Set up job processing
+    this.queue1.process(processJob);
+
+    // Handle errors during processing
+    this.queue1.on('error', (error) => {
+      console.error('Queue error:', error);
+    });
+
+    // Listen for completed jobs
+    this.queue1.on('completed', (job) => {
+      console.log(`Job ${job.id} completed`);
+    });
+
+    // Handle graceful shutdown
+    process.on('SIGTERM', async () => {
+      console.log('Received SIGTERM. Closing queue and exiting gracefully.');
+      await this.queue1.close();
+      process.exit(0);
+    });
+  }
 
   public startProducer(queueName: string = this.defaultQueueName): Promise<(data: any) => void> {
     console.log("Producer rabbitMQ: connecting");
@@ -104,76 +149,27 @@ export class RabbitMQService {
           console.log(msg); // do your thing with the message
           if (queueName === "order:created") {
             await this.handleOrderCreated(msg);
-          } else if (queueName === "order:updated") {
-            await this.handleOrderUpdated(msg);
-          } else if (queueName === "order:expired") {
-            await this.handleOrderExpired(msg);
           }
-
         }
       },
       { noAck: true }
     );
   }
 
+
   private async handleOrderCreated(data: any) {
     const { id, title, price, userId, version } = data;
-    //find the ticket that the order is reserving
-    const ticket = await Ticket.findById(data.ticket.id);
-    if (!ticket) {
-      throw new Error('Ticket not found');
-    }
-    //mark the ticket as being reserved by setting its orderId property
-    ticket.set({ orderId: id });
-    //save the ticket
-    await ticket.save();
-    console.log("handleOrderCreated :", ticket);
 
-
-
+    await this.queue1.add({ id, title, price, userId, version });
+    console.log(`Processing job for ${id} `);
+    const produceMessage = await this.startProducer("order:expired");
+    produceMessage({
+      orderId: id,
+      ticketId: data.ticket.id
+    });
   }
 
-  private async handleOrderUpdated(data: any) {
-    const { id, title, price, userId, version } = data;
-
-    // Find the ticket that the order is updating
-    const ticket = await Ticket.findById(data.ticket.id);
-
-    if (!ticket) {
-      throw new Error('Ticket not found');
-    }
-
-    // Check if the order status is now "Cancelled" or any other relevant status
-    if (data.status === 'Cancelled') {
-      // If the order is cancelled, update the ticket's reservation status
-      ticket.set({ orderId: null });
-    }
-
-    // You might have other logic to handle different order update scenarios
-
-    // Save the updated ticket
-    await ticket.save();
-    console.log("handleOrderUpdated:", ticket);
-  }
-
-  private async handleOrderExpired(data: any) {
-    const { ticketId } = data;
-
-
-    // Find the ticket associated with the order
-    const ticket = await Ticket.findById(ticketId);
-
-    if (!ticket) {
-      console.error('Ticket not found');
-      return;
-    }
-
-    // Release the lock on the ticket by setting orderId to null
-    ticket.set({ orderId: null });
-
-    // Save the updated ticket
-    await ticket.save();
-    console.log(`Lock released for ticket ${ticket.id}`);
-  }
 }
+
+
 

@@ -1,0 +1,24 @@
+{
+  "name": "expiration",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node-dev src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fadedreams7org1/common": "^1.0.7",
+    "@types/bull": "^3.15.9",
+    "bull": "^3.29.3",
+    "node-nats-streaming": "^0.3.2",
+    "redis": "^4.6.10",
+    "ts-node-dev": "^1.1.6"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

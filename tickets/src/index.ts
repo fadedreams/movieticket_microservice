@@ -29,6 +29,7 @@ const start = async () => {
 
   rabbitService.startConsumer("order:created");
   rabbitService.startConsumer("order:updated");
+  rabbitService.startConsumer("order:expired");
 
 };
 

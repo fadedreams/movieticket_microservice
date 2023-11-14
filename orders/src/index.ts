@@ -27,6 +27,7 @@ const start = async () => {
 
   rabbitService.startConsumer("ticket:created");
   rabbitService.startConsumer("ticket:updated");
+  rabbitService.startConsumer("order:expired");
 
 };
 

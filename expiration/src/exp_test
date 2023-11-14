@@ -1,0 +1,64 @@
+import Queue, { Job } from 'bull';
+
+// Create a new Bull queue with the name 'order_expiration_queue'
+const expirationQueue = new Queue('order_expiration_queue', {
+  redis: {
+    host: 'localhost', // Update this with your Redis host if needed
+    port: 6379,        // Update this with your Redis port if needed
+  },
+
+});
+
+// Process jobs in the queue after 5 seconds
+expirationQueue.process(async (job: Job) => {
+  // Access job data
+  const { id, status, userId, expiresAt, ticket } = job.data;
+
+  // Process the job logic
+  console.log(`Processing job for order ${id} after 5 seconds...`);
+
+  // Example: Simulate some processing time
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
+  // Log job details
+  console.log({
+    id,
+    status,
+    userId,
+    expiresAt,
+    ticket: {
+      id: ticket.id,
+      price: ticket.price,
+    },
+  });
+
+  // Log a message after the delay is completed
+  console.log(`Job processing completed for order ${id}`);
+});
+
+// Create a job and add it to the queue
+const order = {
+  id: 'your_order_id',
+  status: 'pending',
+  userId: 'your_user_id',
+  expiresAt: new Date(Date.now() + 5 * 1000), // 5 seconds from now
+  ticket: {
+    id: 'your_ticket_id',
+    price: 19.99,
+  },
+};
+
+// Add the job to the queue with the name 'order_expiration_queue'
+const addExp = async () => {
+  await expirationQueue.add('order-expiration', order, {
+    delay: 5 * 1000, // Delay the job by 5 seconds
+  });
+};
+
+addExp();
+
+console.log(`Job added to the queue. Order ID: ${order.id}`);
+
+// Start processing the queue immediately
+await expirationQueue.process(() => { });
+

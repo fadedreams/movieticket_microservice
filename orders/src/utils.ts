@@ -1,5 +1,7 @@
 import amqp, { Channel, Connection, Message } from "amqplib/callback_api";
 import { TicketO } from "./models/ticket";
+import { Order } from "./models/order";
+import { OrderStatus } from '@fadedreams7org1/common';
 
 export class RabbitMQService {
   private rabbitHost: string;
@@ -103,7 +105,11 @@ export class RabbitMQService {
             await this.handleTicketCreated(msg);
           } else if (queueName === "ticket:updated") {
             await this.handleTicketUpdated(msg);
+          } else if (queueName === "order:expired") {
+            console.log("got order:expired")
+            await this.handleOrderExpired(msg);
           }
+
         }
       },
       { noAck: true }
@@ -158,5 +164,30 @@ export class RabbitMQService {
       console.error("Error updating ticket:", error);
     }
   }
+
+
+  private async handleOrderExpired(data: any) {
+    const { orderId } = data;
+
+    try {
+      // Assuming you have an Order model in your database
+      const order = await Order.findById(orderId);
+
+      if (order) {
+        // Update the order status to "cancelled"
+        order.status = OrderStatus.Cancelled;
+
+        // Save the updated order to the database
+        await order.save();
+
+        console.log(`Order ${orderId} status updated to 'cancelled'.`);
+      } else {
+        console.log(`Order with ID ${orderId} not found.`);
+      }
+    } catch (error) {
+      console.error(`Error updating order status: ${error}`);
+    }
+  }
+
 }
 
