@@ -101,9 +101,9 @@ export class RabbitMQService {
         if (data) {
           const msg = JSON.parse(data.content.toString());
           console.log(msg); // do your thing with the message
-          if (queueName === "ticket:created") {
+          if (queueName === "order:created") {
             await this.handleOrderCreated(msg);
-          } else if (queueName === "ticket:updated") {
+          } else if (queueName === "order:updated") {
             await this.handleOrderUpdated(msg);
           }
         }
@@ -114,28 +114,19 @@ export class RabbitMQService {
 
   private async handleOrderCreated(data: any) {
     const { id, title, price, userId, version } = data;
-
-    try {
-      // Check if a ticket with the given ID already exists
-      const existingTicket = await Ticket.findById(id);
-
-      if (existingTicket) {
-        console.warn(`Ticket with ID ${id} already exists. Updating instead of creating.`);
-        // Handle logic to update the existing ticket if needed
-        existingTicket.set({ title, price, userId, version });
-        await existingTicket.save();
-        console.log("Ticket updated:", existingTicket);
-      } else {
-        // Create a new ticket with version information
-        const ticket = Ticket.build({ id, title, price, userId, version });
-
-        // Save the ticket to the database using optimistic concurrency control
-        await ticket.save();
-        console.log("Ticket created:", ticket);
-      }
-    } catch (error) {
-      console.error("Error creating/updating ticket:", error);
+    //find the ticket that the order is reserving
+    const ticket = await Ticket.findById(data.ticket.id);
+    if (!ticket) {
+      throw new Error('Ticket not found');
     }
+    //mark the ticket as being reserved by setting its orderId property
+    ticket.set({ orderId: id });
+    //save the ticket
+    await ticket.save();
+    console.log("handleOrderCreated :", ticket);
+
+
+
   }
 
   private async handleOrderUpdated(data: any) {
