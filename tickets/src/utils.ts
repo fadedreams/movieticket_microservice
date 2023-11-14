@@ -130,26 +130,27 @@ export class RabbitMQService {
   }
 
   private async handleOrderUpdated(data: any) {
-    const { ticketId, updatedFields, version } = data;
+    const { id, title, price, userId, version } = data;
 
-    try {
-      // Find the ticket by ID and version
-      const ticket = await Ticket.findOne({ _id: ticketId, version: version - 1 });
+    // Find the ticket that the order is updating
+    const ticket = await Ticket.findById(data.ticket.id);
 
-      if (ticket) {
-        // Update ticket properties based on the received data
-        Object.assign(ticket, updatedFields);
-
-        // Increment the version and save the updated ticket to the database
-        await ticket.save();
-
-        console.log("Ticket updated:", ticket);
-      } else {
-        console.log("Ticket not found or version mismatch for update:", ticketId, version);
-      }
-    } catch (error) {
-      console.error("Error updating ticket:", error);
+    if (!ticket) {
+      throw new Error('Ticket not found');
     }
+
+    // Check if the order status is now "Cancelled" or any other relevant status
+    if (data.status === 'Cancelled') {
+      // If the order is cancelled, update the ticket's reservation status
+      ticket.set({ orderId: null });
+    }
+
+    // You might have other logic to handle different order update scenarios
+
+    // Save the updated ticket
+    await ticket.save();
+    console.log("handleOrderUpdated:", ticket);
   }
+
 }
 
