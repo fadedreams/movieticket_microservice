@@ -11,8 +11,8 @@ const start = async () => {
   //}
 
   try {
-    //await mongoose.connect('mongodb://tickets-mongo-srv:27017/auth', {
-    await mongoose.connect('mongodb://localhost:27017/tickets', {
+    await mongoose.connect('mongodb://tickets-mongo-srv:27017/auth', {
+      // await mongoose.connect('mongodb://localhost:27017/tickets', {
       //useNewUrlParser: true,
       //useUnifiedTopology: true,
       //useCreateIndex: true

@@ -10,8 +10,8 @@ const start = async () => {
   //}
 
   try {
-    //await mongoose.connect('mongodb://orders-mongo-srv:27017/auth', {
-    await mongoose.connect('mongodb://localhost:27017/orders', {
+    await mongoose.connect('mongodb://orders-mongo-srv:27017/auth', {
+      // await mongoose.connect('mongodb://localhost:27017/orders', {
       //useNewUrlParser: true,
       //useUnifiedTopology: true,
       //useCreateIndex: true

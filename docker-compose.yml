@@ -47,9 +47,11 @@ services:
   tickets:
     build: ./tickets
     ports:
-      - "3001:3001"  # Adjust the port as needed
+      - "3001:3001"
     depends_on:
       - tickets-mongo-srv
+      - rabbitmq
+      - redis
     volumes:
       - tickets-data:/app/data
     env_file:
@@ -62,7 +64,7 @@ services:
     environment:
       MONGO_INITDB_DATABASE: tickets
     ports:
-      - "27018:27017"  # Adjust the port as needed
+      - "27018:27017"
     volumes:
       - tickets-mongo-data:/data/db
     env_file:
@@ -74,6 +76,24 @@ services:
     image: "rabbitmq:3.8"
     ports:
       - "5672:5672"
+    networks:
+      - my_network
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
+
+  expiration:
+    build: ./expiration
+    depends_on:
+      - rabbitmq
+      - redis
+      - tickets
+    volumes:
+      - ./expiration:/app
     networks:
       - my_network
 
