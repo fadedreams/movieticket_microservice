@@ -81,6 +81,7 @@ services:
 
   redis:
     image: "redis:latest"
+    command: ["redis-server", "--maxmemory", "1g"]
     ports:
       - "6379:6379"
     networks:
