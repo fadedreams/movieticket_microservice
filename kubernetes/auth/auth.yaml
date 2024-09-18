@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth
+        image: auth:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: shared-config
+        volumeMounts:
+        - name: auth-data
+          mountPath: /app/data
+      volumes:
+      - name: auth-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-srv
+spec:
+  selector:
+    app: auth
+  ports:
+  - port: 3000
+    targetPort: 3000
