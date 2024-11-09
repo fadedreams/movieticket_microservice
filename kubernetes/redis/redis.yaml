@@ -1,38 +1,58 @@
+# keydb.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-deployment
+  name: keydb-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: keydb
   template:
     metadata:
       labels:
-        app: redis
+        app: keydb
     spec:
       containers:
-      - name: redis
-        image: redis:latest
-        args: ["redis-server", "--maxmemory", "1g"]
+      - name: keydb
+        image: eqalpha/keydb:latest
+        args: ["keydb-server", "/etc/keydb/keydb.conf"]
         ports:
         - containerPort: 6379
         resources:
           limits:
+            cpu: "1"    # Increased for better multithread performance
+            memory: "1Gi"
+          requests:
             cpu: "0.5"
             memory: "512Mi"
-          requests:
-            cpu: "0.2"
-            memory: "256Mi"
+        volumeMounts:
+        - name: keydb-config
+          mountPath: /etc/keydb
+      volumes:
+      - name: keydb-config
+        configMap:
+          name: keydb-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keydb-config
+data:
+  keydb.conf: |
+    server-threads 4
+    maxmemory 1gb
+    maxmemory-policy allkeys-lru
+    protected-mode no
+    appendonly yes
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-srv
+  name: keydb-srv
 spec:
   selector:
-    app: redis
+    app: keydb
   ports:
   - port: 6379
     targetPort: 6379

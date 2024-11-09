@@ -79,20 +79,41 @@ services:
     networks:
       - my_network
 
-  redis:
-    image: "redis:latest"
-    command: ["redis-server", "--maxmemory", "1g"]
+  keydb:
+    image: "eqalpha/keydb:latest"
+    command: keydb-server /etc/keydb/keydb.conf
     ports:
       - "6379:6379"
+    volumes:
+      - ./keydb.conf:/etc/keydb/keydb.conf
     networks:
       - my_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # redis:
+  #   image: "redis:latest"
+  #   command: ["redis-server", "--maxmemory", "1g"]
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - my_network
 
   expiration:
     build: ./expiration
     depends_on:
       - rabbitmq
-      - redis
+      - keydb
+      # - redis
       - tickets
+    environment:
+      - KEYDB_HOST=keydb
     volumes:
       - ./expiration:/app
     networks:
